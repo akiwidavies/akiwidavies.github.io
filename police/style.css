@@ -1,0 +1,22 @@
+* {
+    font-family: 'Open Sans', sans-serif;
+    color: #ffffff;
+    font-weight: 200;
+}
+h1, h2 { font-weight: bold; }
+.domain, h2, h4 {
+    color: #f8da56;
+}
+body { padding: 0; }
+.content {
+    padding: 5px;
+}
+h1 { margin-top: 0; }
+
+
+/* styles to mimic the Christadelphian formatting */
+p { text-indent: 2.5rem; }
+
+h4 + p, h4 + h6 + p, h6 + p, h4 + p.Quote + p, h4 + p.Quote + p, p.Greeting + p, p.Caption + p.Caption, li > p, .Filler p.Intro, .Information p.Intro, .Editor-Note p.Intro, .Office-News p.Intro, .ref { text-indent: 0; }
+
+.SmallCaps { color: #f8da56; }
