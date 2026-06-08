@@ -1,0 +1,386 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Train Stats</title>
+        <!-- Version 2.0.0 -->
+        <!-- Palette:
+Hard black: #15100A
+Background: #272822
+Yellow: #f8da56
+-->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/trains/apple-touch-icon.png"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/trains/favicon-32x32.png"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/trains/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/trains/site.webmanifest" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background: #272822;
+                font-family: "Open Sans", sans-serif;
+                color: #fff;
+                min-height: 100vh;
+                min-width: 420px;
+            }
+
+            .page-title {
+                text-align: center;
+                padding: 1.25rem 1rem 0.5rem;
+                font-size: 1.4rem;
+                font-weight: 700;
+                color: #f8da56;
+                letter-spacing: 0.05em;
+                background: #272822;
+            }
+
+            /* ── Sticky column headers ── */
+            .col-headers {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                background: #272822;
+                border-bottom: 2px solid #f8da5630;
+                display: flex;
+            }
+
+            .gutter-spacer {
+                flex: 0 0 48px;
+            }
+
+            .col-header-cell {
+                flex: 1;
+                text-align: center;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #f8da56;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                padding: 0.55rem 0.25rem;
+                border-left: 1px solid #ffffff10;
+            }
+
+            /* ── Timeline body ── */
+            .timeline-body {
+                position: relative;
+                display: flex;
+                padding-bottom: 2rem;
+            }
+
+            /* ── Time gutter ── */
+            .time-gutter {
+                flex: 0 0 48px;
+                position: relative;
+            }
+
+            .hour-label {
+                position: absolute;
+                left: 0;
+                right: 4px;
+                text-align: right;
+                font-size: 0.58rem;
+                font-weight: 700;
+                color: #555;
+                letter-spacing: 0.04em;
+                transform: translateY(-50%);
+                white-space: nowrap;
+            }
+
+            /* ── Column lanes ── */
+            .col-lane {
+                flex: 1;
+                position: relative;
+                border-left: 1px solid #ffffff10;
+            }
+
+            .hour-line {
+                position: absolute;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: #ffffff08;
+                pointer-events: none;
+            }
+
+            /* ── Train cards ── */
+            .train-card {
+                position: absolute;
+                left: 5%;
+                width: 90%;
+                background: #1e1c1c;
+                border: 1px solid #f8da5635;
+                border-radius: 8px;
+                padding: 3px 6px 4px;
+                text-align: center;
+            }
+
+            .train-card.past {
+                opacity: 0.28;
+                border-color: #ffffff12;
+            }
+
+            .train-card.next {
+                border-color: #f8da56cc;
+                box-shadow: 0 0 10px #f8da5628;
+            }
+
+            .train-time {
+                display: block;
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #f8da56;
+                line-height: 1.3;
+            }
+
+            .train-card.past .train-time {
+                color: #777;
+            }
+
+            .train-label {
+                display: none;
+                font-size: 0.56rem;
+                color: #888;
+                letter-spacing: 0.05em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* ── Current time line ── */
+            .now-line {
+                position: absolute;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: #e84040bb;
+                z-index: 10;
+                pointer-events: none;
+            }
+
+            .now-line-time {
+                position: absolute;
+                left: 0;
+                width: 45px;
+                top: -8px;
+                text-align: right;
+                padding-right: 4px;
+                font-size: 0.56rem;
+                font-weight: 700;
+                color: #e84040;
+                line-height: 1;
+                background: #272822;
+            }
+
+            /* Red dot at the boundary between gutter and lanes */
+            .now-line::after {
+                content: "";
+                position: absolute;
+                left: 44px;
+                top: -4px;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #e84040;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 class="page-title">Timetables</h1>
+
+        <div class="col-headers" id="col-headers">
+            <div class="gutter-spacer"></div>
+            <!-- column header cells added by JS -->
+        </div>
+
+        <div class="timeline-body" id="timeline-body">
+            <div class="time-gutter" id="time-gutter"></div>
+            <!-- col-lane divs added by JS -->
+            <div class="now-line" id="now-line">
+                <span class="now-line-time" id="now-line-time"></span>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                var PX_PER_MIN = 3;
+                var START_HOUR = 5;
+                var END_HOUR = 24;
+                var TOTAL_HEIGHT = (END_HOUR - START_HOUR) * 60 * PX_PER_MIN;
+                var CARD_HEIGHT = 38;
+
+                function parseTimeToMins(str) {
+                    var parts = str.trim().toLowerCase().split(" ");
+                    var tp = parts[0].split(":");
+                    var h = parseInt(tp[0], 10);
+                    var m = parseInt(tp[1], 10);
+                    var mer = parts[1];
+                    if (mer === "pm" && h !== 12) h += 12;
+                    if (mer === "am" && h === 12) h = 0;
+                    return h * 60 + m;
+                }
+
+                function minsToTop(mins) {
+                    return (mins - START_HOUR * 60) * PX_PER_MIN;
+                }
+
+                function formatMins(mins) {
+                    var h = Math.floor(mins / 60);
+                    var m = Math.floor(mins % 60);
+                    var ampm = h < 12 ? "am" : "pm";
+                    if (h === 0) h = 12;
+                    else if (h > 12) h -= 12;
+                    return h + ":" + (m < 10 ? "0" : "") + m + " " + ampm;
+                }
+
+                function nowMins() {
+                    var d = new Date();
+                    return (
+                        d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60
+                    );
+                }
+
+                function buildGutter() {
+                    var gutter = document.getElementById("time-gutter");
+                    gutter.style.height = TOTAL_HEIGHT + "px";
+                    for (var h = START_HOUR; h <= END_HOUR; h++) {
+                        var top = minsToTop(h * 60);
+                        var label = document.createElement("div");
+                        label.className = "hour-label";
+                        label.style.top = top + "px";
+                        var dh = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                        label.textContent = dh + (h < 12 ? "a" : "p");
+                        gutter.appendChild(label);
+                    }
+                }
+
+                function buildColumn(col) {
+                    var now = nowMins();
+
+                    // Header cell
+                    var hCell = document.createElement("div");
+                    hCell.className = "col-header-cell";
+                    hCell.textContent = col.title || col.key;
+                    document.getElementById("col-headers").appendChild(hCell);
+
+                    // Find first future train
+                    var nextIdx = -1;
+                    for (var j = 0; j < col.entries.length; j++) {
+                        if (parseTimeToMins(col.entries[j].time) >= now) {
+                            nextIdx = j;
+                            break;
+                        }
+                    }
+
+                    // Lane
+                    var lane = document.createElement("div");
+                    lane.className = "col-lane";
+                    lane.style.height = TOTAL_HEIGHT + "px";
+
+                    // Hour lines
+                    for (var h = START_HOUR; h <= END_HOUR; h++) {
+                        var line = document.createElement("div");
+                        line.className = "hour-line";
+                        line.style.top = minsToTop(h * 60) + "px";
+                        lane.appendChild(line);
+                    }
+
+                    // Cards
+                    col.entries.forEach(function (e, i) {
+                        var mins = parseTimeToMins(e.time);
+                        var top = minsToTop(mins);
+                        var card = document.createElement("div");
+                        var cls = "train-card";
+                        if (mins < now) cls += " past";
+                        else if (i === nextIdx) cls += " next";
+                        card.className = cls;
+                        card.style.top = top - CARD_HEIGHT / 2 + "px";
+                        card.innerHTML =
+                            '<span class="train-time">' +
+                            e.time +
+                            "</span>" +
+                            '<span class="train-label">' +
+                            (e.label || "") +
+                            "</span>";
+                        lane.appendChild(card);
+                    });
+
+                    // Insert before the now-line
+                    var nowLine = document.getElementById("now-line");
+                    document
+                        .getElementById("timeline-body")
+                        .insertBefore(lane, nowLine);
+                }
+
+                function updateNowLine() {
+                    var now = nowMins();
+                    var top = minsToTop(now);
+                    var line = document.getElementById("now-line");
+                    var timeLabel = document.getElementById("now-line-time");
+                    if (line) line.style.top = top + "px";
+                    if (timeLabel)
+                        timeLabel.textContent = formatMins(Math.round(now));
+                }
+
+                function scrollToNow() {
+                    var headerH =
+                        (document.querySelector(".page-title") || {})
+                            .offsetHeight +
+                        (document.getElementById("col-headers") || {})
+                            .offsetHeight;
+                    var top = minsToTop(nowMins());
+                    var target = top + headerH - window.innerHeight * 0.35;
+                    window.scrollTo({
+                        top: Math.max(0, target),
+                        behavior: "instant",
+                    });
+                }
+
+                function renderData(json) {
+                    if (!json || !json.columns) return;
+                    buildGutter();
+                    json.columns.forEach(buildColumn);
+                    updateNowLine();
+                    scrollToNow();
+                }
+
+                fetch("./timetables.json")
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(renderData)
+                    .catch(function (err) {
+                        console.error("Failed to load timetables.json", err);
+                    });
+
+                setInterval(updateNowLine, 30000);
+            })();
+        </script>
+    </body>
+</html>
